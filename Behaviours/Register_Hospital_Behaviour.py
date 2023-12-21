@@ -14,7 +14,7 @@ class RegisterHospital_Behav (OneShotBehaviour):
                           "Neurologia", "Urologia"]
 
         self.agent.atributos = Reg_Hospital(str(self.agent.jid),
-                                          Position(random.randint(1, 100), random.randint(1, 100)),
+                                          Position(random.randint(1, 1000), random.randint(1, 1000)),
                                             random.choice([True,False]),random.sample(Especialidades,random.randint(1,len(Especialidades))))
 
         print("Agent {}:".format(str(self.agent.jid)) + " Hospital initialized with {}".format(self.agent.atributos.toString()))

@@ -18,7 +18,7 @@ class RegisterVeiculo_Behav (OneShotBehaviour):
         else:
             escolha = "Ambulancia"
         self.agent.atributos = Reg_Veiculo(str(self.agent.jid),
-                                          Position(random.randint(1, 100), random.randint(1, 100)),True,escolha)
+                                          Position(random.randint(1, 1000), random.randint(1, 1000)),True,escolha)
 
         print("Agent {}:".format(str(self.agent.jid)) + " Veiculo initialized with {}".format(self.agent.atributos.toString()))
 

@@ -5,7 +5,7 @@ class Request_Help(OneShotBehaviour):
     Especialidades = ["Cardiologia", "Pneumologia", "Pediatria", "Ortopedia", "Obstetricia", "Traumatologia",
                       "Neurologia", "Urologia"]
     self.agent.atributos = Reg_Ajuda(str(self.agent.jid),
-                                        Position(random.randint(1, 100), random.randint(1, 100)),
+                                        Position(random.randint(1, 1000), random.randint(1, 1000)),
                                         random.choice(["MG","G","L"]),
                                         random.choice(Especialidades))
 
