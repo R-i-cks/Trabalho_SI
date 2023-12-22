@@ -3,6 +3,7 @@ import time
 from Agentes.ugve import UgveAgent
 from Agentes.hospital import HospitalAgent
 from Agentes.veiculo import VeiculoAgent
+from Agentes.paciente import PacienteAgent
 from spade import quit_spade
 
 XMPP_SERVER = 'desktop-seqnlnu.home'
@@ -25,12 +26,20 @@ if __name__ == "__main__":
     veiculo_agent = VeiculoAgent(veiculo_jid, PASSWORD)
     veiculo_agent.set('ugve_contact', 'manager@' + XMPP_SERVER)
     res_veiculo = veiculo_agent.start(auto_register=True)
+
+    res_veiculo.result()
+    res_hospital.result()
+    paciente_jid = 'paciente@' + XMPP_SERVER
+    paciente_agent = PacienteAgent(paciente_jid, PASSWORD)
+    paciente_agent.set('ugve_contact', 'manager@' + XMPP_SERVER)
+    res_paciente = paciente_agent.start(auto_register=True)
     while manager_agent.is_alive():
         try:
             time.sleep(1)
         except KeyboardInterrupt:
             hospital_agent.stop()
             veiculo_agent.stop()
+            paciente_agent.stop()
             break
     print('Agents finished')
 

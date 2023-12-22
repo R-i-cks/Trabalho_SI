@@ -1,6 +1,7 @@
 from spade import agent
 from Behaviours.request_help import Request_Help
-class PacienteAgent():
+
+class PacienteAgent(agent.Agent):
     pedido = None
 
     async def setup(self):

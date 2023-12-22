@@ -2,12 +2,12 @@ from Classes.position import Position
 
 class Reg_Hospital:
 
-        def __init__(self, agent_jid: str, position: Position, available: bool,especialidades:list):
+        def __init__(self, agent_jid: str, position: Position, available: bool,especialidades:list,ocupado: bool ):
             self.agent_jid = agent_jid
             self.position = position
             self.heliporto = available
             self.especialidade = especialidades
-
+            self.heli_ocupado = ocupado
         def getAgent(self):
             return self.agent_jid
 
@@ -37,7 +37,11 @@ class Reg_Hospital:
 
         def removeEspecialidade(self,elem):
             self.especialidade.remove(elem)
+        def getOcupado(self):
+            return self.heli_ocupado
 
+        def setOcupado(self,ocup):
+            self.heli_ocupado = ocup
         def toString(self):
             return "Reg_Hospital [agent_jid=" + self.agent_jid + ", position=" + self.position.toString() + ", heliporto=" + str(
-                self.heliporto) +" especialidades=" + str(self.especialidade) + "]"
+                self.heliporto) +" especialidades=" + str(self.especialidade) + "heliporto ocupado=" + str(self.heli_ocupado) + "]"
