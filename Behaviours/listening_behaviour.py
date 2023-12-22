@@ -124,12 +124,13 @@ class Listening_Behaviour(CyclicBehaviour):
                     str(msg.sender)))
                 transport_request = jsonpickle.decode(msg.body)
 
-                dist_min = 1000.0
+                dist_min = 1000000000.0
 
-                dic_terrestre = {}
-                dic_heli = {'total':1000000}
+                dic_terrestre = {'total':1000000.0}
+                dic_heli = {'total':1000000000.0}
 
                 for ind, hospital in enumerate(self.agent.hospitais):
+                    #procurar hospital mais próximo para receber transporte terrestre
                     if transport_request.getEspecialidade() in hospital.getEspecialidade():
                         distance = (
                             abs(hospital.getPosition().getX() - transport_request.getPosition().getX()) +
@@ -138,25 +139,26 @@ class Listening_Behaviour(CyclicBehaviour):
 
                         if (dist_min > distance):
                             dic_terrestre["hospital"] = hospital
+                            dic_terrestre['total'] = distance
                             dist_min = distance
+                if 'hospital' in dic_terrestre.keys():
+                    for ind, veiculos in enumerate(self.agent.veiculos):
+                        if veiculos.getTipo() != 'Helicoptero' and veiculos.isAvailable():
+                            distance = (
+                                    abs(veiculos.getPosition().getX() - transport_request.getPosition().getX()) +
+                                    abs(veiculos.getPosition().getY() - transport_request.getPosition().getY())
+                            )
 
-                dic_terrestre['total'] = dist_min
-                dist_min = 1000.0
-                for ind, veiculos in enumerate(self.agent.veiculos):
-                    if veiculos.getTipo() != 'Helicoptero' and veiculos.isAvailable():
-                        distance = (
-                                abs(veiculos.getPosition().getX() - transport_request.getPosition().getX()) +
-                                abs(veiculos.getPosition().getY() - transport_request.getPosition().getY())
-                        )
+                            if (dist_min > distance):
+                                dic_terrestre['veiculo'] = veiculos
+                                dic_terrestre['vei_index'] = ind
+                                dist_min = distance
 
-                        if (dist_min > distance):
-                            dic_terrestre['veiculo'] = veiculos
-                            dic_terrestre['vei_index'] = ind
-                            dist_min = distance
+                    dic_terrestre['total'] = dic_terrestre['total'] + dist_min
+                else:
+                    dic_terrestre = 1000000000.0
 
-                dic_terrestre['total'] = dic_terrestre['total'] + dist_min
-
-                dist_min = 1000.0
+                dist_min = 1000000000.0
                 if transport_request.getEstado() == "MG":
                     for ind, hospital in enumerate(self.agent.hospitais):
 
@@ -168,26 +170,30 @@ class Listening_Behaviour(CyclicBehaviour):
 
                             if (dist_min > distance):
                                 dic_heli['hospital'] = hospital
+                                dic_heli['total'] = distance
                                 dist_min = distance
 
-                    dic_heli['total'] = dist_min
-                    dist_min = 1000.0
-                    for ind, veiculos in enumerate(self.agent.veiculos):
-                        if veiculos.getTipo() == 'Helicoptero' and veiculos.isAvailable():
-                            distance = math.sqrt(
-                                math.pow(veiculos.getPosition().getX() - transport_request.getPosition().getX(), 2) +
-                                math.pow(veiculos.getPosition().getY() - transport_request.getPosition().getY(), 2)
-                            )
 
-                            if (dist_min > distance):
-                                dic_heli['veiculo'] = veiculos
-                                dic_heli['vei_index'] = ind
-                                dist_min = distance
+                    dist_min = 1000000000.0
+                    if 'hospital' in dic_heli.keys():
+                        for ind, veiculos in enumerate(self.agent.veiculos):
+                            if veiculos.getTipo() == 'Helicoptero' and veiculos.isAvailable():
+                                distance = math.sqrt(
+                                    math.pow(veiculos.getPosition().getX() - transport_request.getPosition().getX(), 2) +
+                                    math.pow(veiculos.getPosition().getY() - transport_request.getPosition().getY(), 2)
+                                )
 
-                    dic_heli['total'] = dic_heli['total'] + dist_min
+                                if (dist_min > distance):
+                                    dic_heli['veiculo'] = veiculos
+                                    dic_heli['vei_index'] = ind
+                                    dist_min = distance
+
+                        dic_heli['total'] = dic_heli['total'] + dist_min
+                    else:
+                        dic_heli['total'] = 1000000000.0
 
                 print(dic_terrestre,dic_heli)
-                if dic_terrestre['total']/120 < dic_heli['total']/400:
+                if dic_terrestre['total']/120 <= dic_heli['total']/400 and 'hospital' in dic_terrestre.keys() and ' veiculo' in dic_terrestre.keys():
                     # Enviar pedido ao veiculo terrestre mais próximo
                     print("Agent {}:".format(
                         str(self.agent.jid)) + " Veiculo Agent {} selected for Transport Request!".format(
@@ -201,7 +207,7 @@ class Listening_Behaviour(CyclicBehaviour):
 
                     self.agent.veiculos[dic_terrestre['vei_index']].setAvailable(False)
 
-                elif dic_terrestre['total']/120 > dic_heli['total']/400:
+                elif dic_terrestre['total']/120 > dic_heli['total']/400 and 'hospital' in dic_heli.keys() and 'veiculo' in dic_heli.keys():
 
                     # Enviar pedido ao helicoptero mais próximo
                     print("Agent {}:".format(
@@ -217,7 +223,7 @@ class Listening_Behaviour(CyclicBehaviour):
                     self.agent.veiculos[dic_heli['vei_index']].setAvailable(False)
 
                 else:
-                    print("Agent {}:".format(str(self.agent.jid)) + " No Taxis available!")
+                    print("Agent {}:".format(str(self.agent.jid)) + " O paciente não pode ser atendido por nenhum hospital!")
                     msg = msg.make_reply()
                     msg.set_metadata("performative", "refuse")
                     await self.send(msg)
