@@ -9,8 +9,6 @@ from spade.message import Message
 class Listening_Veiculo_Behaviour(CyclicBehaviour):
     async def run(self):
         msg = await self.receive(timeout=10)
-        processos=None
-
         if msg:
             if msg.get_metadata("performative") == "request":
                 pedido = jsonpickle.decode(msg.body)
@@ -31,7 +29,7 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
                         velocidade = 400
 
                     time.sleep(distance/velocidade)
-                    processos = pedido
+                    self.agent.processos = pedido
                     self.agent.atributos.setPosition(pedido.getPosition())
                     resposta = Message(to=str(msg.sender))
                     resposta.set_metadata("performative", "confirm")
@@ -67,16 +65,18 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
                 self.agent.atributos.setPosition(hospital.getPosition())
                 resposta = Message(to=str(msg.sender))
                 resposta.set_metadata("performative", "inform")
-                resposta.body = jsonpickle.encode(processos)
+                resposta.body = jsonpickle.encode(self.agent.processos)
                 await self.send(resposta)
 
                 resposta = Message(to=hospital.getAgent())
                 resposta.set_metadata("performative", "inform")
-                resposta.body = "Chegueeeeei, cheguei chegando"
+                resposta.body = jsonpickle.encode(self.agent.processos)
                 await self.send(resposta)
 
                 print("Veiculo: paciente chegou ao hospital")
-                self.agent.atributos.setPosition(random.randint(1,1000), random.randint(1,1000))
+                x,y = random.randint(1,1000), random.randint(1,1000)
+                print(x,y)
+                self.agent.atributos.setPosition((x, y))
                 self.agent.atributos.setAvailable(True)
                 msg = Message(to=self.agent.get("ugve_contact"))
                 msg.body = jsonpickle.encode(self.agent.atributos)

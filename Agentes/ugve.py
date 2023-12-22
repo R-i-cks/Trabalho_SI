@@ -5,7 +5,7 @@ class UgveAgent(agent.Agent):
 
     hospitais = []
     veiculos = []
-
+    processos = {}
     async def setup(self):
         print("Agent {}".format(str(self.jid)) + " starting...")
         a = Listening_Behaviour()

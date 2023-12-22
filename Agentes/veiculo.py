@@ -5,7 +5,7 @@ from Behaviours.listening_veiculo_behav import Listening_Veiculo_Behaviour
 class VeiculoAgent(agent.Agent):
 
     atributos = None
-
+    processos = None
     async def setup(self):
         print("Agent {}".format(str(self.jid)) + " starting...")
         a = RegisterVeiculo_Behav()

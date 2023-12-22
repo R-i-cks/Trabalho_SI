@@ -5,7 +5,6 @@ from spade.message import Message
 
 class Listening_Behaviour(CyclicBehaviour):
     async def run(self):
-        processos={}
         msg = await self.receive(timeout=10)
 
         if msg:
@@ -27,7 +26,7 @@ class Listening_Behaviour(CyclicBehaviour):
 
                 else:
                     for i, veiculos in enumerate(self.agent.veiculos):  # Caso se esteja a reescrever
-                        if veiculos.getAgent() == msg.sender:
+                        if veiculos.getAgent() == str(msg.sender):
                             encontrado = True
                             registry = jsonpickle.decode(msg.body)
                             self.agent.veiculos[i] = registry
@@ -42,36 +41,36 @@ class Listening_Behaviour(CyclicBehaviour):
             elif performative == "confirm":
                 # Pode ser do veiculo que chegou ao paciente, que chegou ao hospital ou do hospital a confirmar que vai receber paciente
                 msg_info = jsonpickle.decode(msg.body)
-                print(processos)
+                print(self.agent.processos)
                 if "veiculo" in str(msg.sender):
-                    hospital = Message(to=processos[msg_info.getAgent()][0].getAgent())
+                    hospital = Message(to=self.agent.processos[msg_info.getAgent()][0].getAgent())
                     hospital.set_metadata("performative", "request")
                     hospital.body = jsonpickle.encode(msg_info)
                     await self.send(hospital)
 
                 elif "hospital" in str(msg.sender):
-                    veiculo = Message(to=processos[msg_info.getAgent()][1].getAgent())
+                    veiculo = Message(to=self.agent.processos[msg_info.getAgent()][1].getAgent())
                     veiculo.set_metadata("performative", "inform")
-                    veiculo.body = jsonpickle.encode(processos[msg_info.getAgent()][0])
+                    veiculo.body = jsonpickle.encode(self.agent.processos[msg_info.getAgent()][0])
                     await self.send(veiculo)
-                    if processos[msg_info.getAgent()][1].getTipo() == "Helicoptero":
-                        processos[msg_info.getAgent()][0].setOcupado(True)
-                        info_heli = Message(to=str(processos[msg_info.getAgent()][0].getAgent()))
+                    if self.agent.processos[msg_info.getAgent()][1].getTipo() == "Helicoptero":
+                        self.agent.processos[msg_info.getAgent()][0].setOcupado(True)
+                        info_heli = Message(to=str(self.agent.processos[msg_info.getAgent()][0].getAgent()))
                         info_heli.set_metadata("performative","inform")
-                        info_heli.body = jsonpickle.encode(processos[msg_info.getAgent()][0])
+                        info_heli.body = jsonpickle.encode(self.agent.processos[msg_info.getAgent()][0])
                         await self.send(info_heli)
 
             elif performative == "inform":
                 msg_info = jsonpickle.decode(msg.body)
-                if processos[msg_info.getAgent()][1].getTipo() == "Helicoptero" :
+                if self.agent.processos[msg_info.getAgent()][1].getTipo() == "Helicoptero" :
                     for hospital in self.agent.hospitais:
-                        if hospital.getAgent() == processos[msg_info.getAgent()][0].getAgent():
+                        if hospital.getAgent() == self.agent.processos[msg_info.getAgent()][0].getAgent():
                            hospital.setOcupado(False)
                            info_hospital = Message(to=hospital.getAgent())
                            info_hospital.set_metadata("performative","inform")
                            info_hospital.body = jsonpickle.encode(hospital)
                            await self.send(info_hospital)
-                processos.pop(msg_info.getAgent())
+                self.agent.processos.pop(msg_info.getAgent())
                 for veiculos in self.agent.veiculos:
                     if veiculos.getAgent() == msg.sender:
                         veiculos.setAvailable(True)
@@ -82,7 +81,7 @@ class Listening_Behaviour(CyclicBehaviour):
             elif performative == "refuse":
                 msg_info = jsonpickle.decode(msg.body)
                 dist_min = 1000
-                if processos[msg_info.getAgent()][1].getTipo != 'Helicoptero':
+                if self.agent.processos[msg_info.getAgent()][1].getTipo != 'Helicoptero':
 
                     for ind, hospital in enumerate(self.agent.hospitais):
 
@@ -94,9 +93,9 @@ class Listening_Behaviour(CyclicBehaviour):
 
                             if (dist_min > distance):
                                 dist_min = distance
-                                processos[msg_info.getAgent()][0] = hospital
+                                self.agent.processos[msg_info.getAgent()][0] = hospital
 
-                    hospital_msg = Message(to=processos[msg_info.getAgent()][0].getAgent())
+                    hospital_msg = Message(to=self.agent.processos[msg_info.getAgent()][0].getAgent())
                     hospital_msg.set_metadata("performative", "request")
                     hospital_msg.body = jsonpickle.encode(msg_info)
                     await self.send(hospital_msg)
@@ -112,9 +111,9 @@ class Listening_Behaviour(CyclicBehaviour):
 
                             if (dist_min > distance):
                                 dist_min = distance
-                                processos[msg_info.getAgent()][0] = hospital
+                                self.agent.processos[msg_info.getAgent()][0] = hospital
 
-                    hospital_msg = Message(to=processos[msg_info.getAgent()][0].getAgent())
+                    hospital_msg = Message(to=self.agent.processos[msg_info.getAgent()][0].getAgent())
                     hospital_msg.set_metadata("performative", "request")
                     hospital_msg.body = jsonpickle.encode(msg_info)
                     await self.send(hospital_msg)
@@ -124,10 +123,10 @@ class Listening_Behaviour(CyclicBehaviour):
                     str(msg.sender)))
                 transport_request = jsonpickle.decode(msg.body)
 
-                dist_min = 1000000000.0
+                dist_min = 1000000000
 
-                dic_terrestre = {'total':1000000.0}
-                dic_heli = {'total':1000000000.0}
+                dic_terrestre = {"total": 10000000}
+                dic_heli = {'total': 1000000000}
 
                 for ind, hospital in enumerate(self.agent.hospitais):
                     #procurar hospital mais próximo para receber transporte terrestre
@@ -141,7 +140,9 @@ class Listening_Behaviour(CyclicBehaviour):
                             dic_terrestre["hospital"] = hospital
                             dic_terrestre['total'] = distance
                             dist_min = distance
-                if 'hospital' in dic_terrestre.keys():
+                print(list(dic_terrestre.keys()))
+                dist_min = 1000000
+                if 'hospital' in list(dic_terrestre.keys()):
                     for ind, veiculos in enumerate(self.agent.veiculos):
                         if veiculos.getTipo() != 'Helicoptero' and veiculos.isAvailable():
                             distance = (
@@ -156,9 +157,9 @@ class Listening_Behaviour(CyclicBehaviour):
 
                     dic_terrestre['total'] = dic_terrestre['total'] + dist_min
                 else:
-                    dic_terrestre = 1000000000.0
+                    dic_terrestre["total"] = 1000000000
 
-                dist_min = 1000000000.0
+                dist_min = 1000000000
                 if transport_request.getEstado() == "MG":
                     for ind, hospital in enumerate(self.agent.hospitais):
 
@@ -174,7 +175,7 @@ class Listening_Behaviour(CyclicBehaviour):
                                 dist_min = distance
 
 
-                    dist_min = 1000000000.0
+                    dist_min = 1000000000
                     if 'hospital' in dic_heli.keys():
                         for ind, veiculos in enumerate(self.agent.veiculos):
                             if veiculos.getTipo() == 'Helicoptero' and veiculos.isAvailable():
@@ -190,16 +191,18 @@ class Listening_Behaviour(CyclicBehaviour):
 
                         dic_heli['total'] = dic_heli['total'] + dist_min
                     else:
-                        dic_heli['total'] = 1000000000.0
+                        dic_heli['total'] = 1000000000
 
-                print(dic_terrestre,dic_heli)
-                if dic_terrestre['total']/120 <= dic_heli['total']/400 and 'hospital' in dic_terrestre.keys() and ' veiculo' in dic_terrestre.keys():
+                dist_terr, dist_aer = dic_terrestre.get('total'), dic_heli.get('total')
+                print(dic_terrestre, dic_heli)
+                if (dist_terr/120) <= (dist_aer/400) and 'hospital' in dic_terrestre.keys()\
+                    and 'veiculo' in dic_terrestre.keys():
                     # Enviar pedido ao veiculo terrestre mais próximo
                     print("Agent {}:".format(
                         str(self.agent.jid)) + " Veiculo Agent {} selected for Transport Request!".format(
                         dic_terrestre['veiculo'].getAgent()))
 
-                    processos[msg.sender] = [dic_terrestre['hospital'], dic_terrestre['veiculo']]
+                    self.agent.processos[str(msg.sender)] = [dic_terrestre['hospital'], dic_terrestre['veiculo']]
                     msg = Message(to=dic_terrestre['veiculo'].getAgent())
                     msg.body = jsonpickle.encode(transport_request)
                     msg.set_metadata("performative", "request")
@@ -207,14 +210,15 @@ class Listening_Behaviour(CyclicBehaviour):
 
                     self.agent.veiculos[dic_terrestre['vei_index']].setAvailable(False)
 
-                elif dic_terrestre['total']/120 > dic_heli['total']/400 and 'hospital' in dic_heli.keys() and 'veiculo' in dic_heli.keys():
+                elif dic_terrestre['total']/120 > dic_heli['total']/400 and 'hospital' in dic_heli.keys() \
+                        and 'veiculo' in dic_heli.keys():
 
                     # Enviar pedido ao helicoptero mais próximo
                     print("Agent {}:".format(
                         str(self.agent.jid)) + " Veiculo Agent {} selected for Transport Request!".format(
                         dic_heli['veiculo'].getAgent()))
 
-                    processos[msg.sender] = [dic_heli['hospital'], dic_heli['veiculo']]
+                    self.agent.processos[str(msg.sender)] = [dic_heli['hospital'], dic_heli['veiculo']]
                     msg = Message(to=dic_heli['veiculo'].getAgent())
                     msg.body = jsonpickle.encode(transport_request)
                     msg.set_metadata("performative", "request")

@@ -8,11 +8,11 @@ import jsonpickle
 class VerificarEspecialidade_Behav (PeriodicBehaviour):
 
     async def run(self):
-        Especialidades = ["Cardiologia", "Pneumologia", "Pediatria", "Ortopedia", "Obstetricia", "Traumatologia",
-                          "Neurologia", "Urologia"]
+
 
         if random.randint(-100, 10) > 0:
-            self.agent.atributos.removeEspecialidade(random.sample(Especialidades,random.randint(1,len(Especialidades))))
+            self.agent.atributos.removeEspecialidade(random.sample(self.agent.atributos.getEspecialidade(),
+                                                                   random.randint(1,len(self.agent.atributos.getEspecialidade()))))
 
             msg = Message(to=self.agent.get("ugve_contact"))
             msg.body = jsonpickle.encode(self.agent.atributos)
