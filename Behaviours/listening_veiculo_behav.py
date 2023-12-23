@@ -4,7 +4,7 @@ from spade.behaviour import CyclicBehaviour
 import jsonpickle
 import math
 from spade.message import Message
-
+from Classes.position import Position
 
 class Listening_Veiculo_Behaviour(CyclicBehaviour):
     async def run(self):
@@ -35,14 +35,14 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
                     resposta.set_metadata("performative", "confirm")
                     resposta.body = msg.body
                     await self.send(resposta)
-                    print("Veiculo: chegou ao paciente")
+                    print(str(self.agent.jid) + ": chegou ao paciente")
 
                 else:
                     resposta = Message(to=str(msg.sender))
                     resposta.set_metadata("performative", "refuse")
                     resposta.body = msg.body
                     await self.send(resposta)
-                    print("Veiculo: recusou pedido")
+                    print(str(self.agent.jid) + ": recusou pedido")
 
             elif msg.get_metadata("performative") == "inform":
                 hospital = jsonpickle.decode(msg.body)
@@ -73,10 +73,9 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
                 resposta.body = jsonpickle.encode(self.agent.processos)
                 await self.send(resposta)
 
-                print("Veiculo: paciente chegou ao hospital")
+                print(str(self.agent.jid) + ": paciente chegou ao hospital")
                 x,y = random.randint(1,1000), random.randint(1,1000)
-                print(x,y)
-                self.agent.atributos.setPosition((x, y))
+                self.agent.atributos.setPosition(Position(x, y))
                 self.agent.atributos.setAvailable(True)
                 msg = Message(to=self.agent.get("ugve_contact"))
                 msg.body = jsonpickle.encode(self.agent.atributos)
@@ -84,4 +83,4 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
                 await self.send(msg)
 
         else:
-            print("Veiculo: não recebeu pedido!")
+            print(str(self.agent.jid) + ": não recebeu pedido!")

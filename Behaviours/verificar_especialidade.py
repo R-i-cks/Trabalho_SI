@@ -11,8 +11,11 @@ class VerificarEspecialidade_Behav (PeriodicBehaviour):
 
 
         if random.randint(-100, 10) > 0:
-            self.agent.atributos.removeEspecialidade(random.sample(self.agent.atributos.getEspecialidade(),
-                                                                   random.randint(1,len(self.agent.atributos.getEspecialidade()))))
+
+            espec_hosp = self.agent.atributos.getEspecialidade()
+            lista_a_retirar = (random.sample(espec_hosp, random.randint(1,len(espec_hosp))))
+            for i in lista_a_retirar:
+                self.agent.atributos.removeEspecialidade(i)
 
             msg = Message(to=self.agent.get("ugve_contact"))
             msg.body = jsonpickle.encode(self.agent.atributos)

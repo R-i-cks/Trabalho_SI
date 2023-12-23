@@ -3,6 +3,7 @@ import jsonpickle
 import math
 from spade.message import Message
 
+
 class Listening_Behaviour(CyclicBehaviour):
     async def run(self):
         msg = await self.receive(timeout=10)
@@ -41,7 +42,6 @@ class Listening_Behaviour(CyclicBehaviour):
             elif performative == "confirm":
                 # Pode ser do veiculo que chegou ao paciente, que chegou ao hospital ou do hospital a confirmar que vai receber paciente
                 msg_info = jsonpickle.decode(msg.body)
-                print(self.agent.processos)
                 if "veiculo" in str(msg.sender):
                     hospital = Message(to=self.agent.processos[msg_info.getAgent()][0].getAgent())
                     hospital.set_metadata("performative", "request")
@@ -140,14 +140,15 @@ class Listening_Behaviour(CyclicBehaviour):
                             dic_terrestre["hospital"] = hospital
                             dic_terrestre['total'] = distance
                             dist_min = distance
-                print(list(dic_terrestre.keys()))
                 dist_min = 1000000
                 if 'hospital' in list(dic_terrestre.keys()):
                     for ind, veiculos in enumerate(self.agent.veiculos):
                         if veiculos.getTipo() != 'Helicoptero' and veiculos.isAvailable():
+                            pos_vei = veiculos.getPosition()
+                            pos_trans = transport_request.getPosition()
                             distance = (
-                                    abs(veiculos.getPosition().getX() - transport_request.getPosition().getX()) +
-                                    abs(veiculos.getPosition().getY() - transport_request.getPosition().getY())
+                                    abs(pos_vei.getX() - pos_trans.getX()) +
+                                    abs(pos_vei.getY() - pos_trans.getY())
                             )
 
                             if (dist_min > distance):
@@ -194,7 +195,6 @@ class Listening_Behaviour(CyclicBehaviour):
                         dic_heli['total'] = 1000000000
 
                 dist_terr, dist_aer = dic_terrestre.get('total'), dic_heli.get('total')
-                print(dic_terrestre, dic_heli)
                 if (dist_terr/120) <= (dist_aer/400) and 'hospital' in dic_terrestre.keys()\
                     and 'veiculo' in dic_terrestre.keys():
                     # Enviar pedido ao veiculo terrestre mais próximo

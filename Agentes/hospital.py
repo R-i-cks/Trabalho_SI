@@ -11,7 +11,7 @@ class HospitalAgent(agent.Agent):
     async def setup(self):
         print("Agent {}".format(str(self.jid)) + " starting...")
         a = RegisterHospital_Behav()
-        b = VerificarEspecialidade_Behav(period=24)
+        b = VerificarEspecialidade_Behav(period=5)
         c = Listening_Hospital_Behaviour()
         self.add_behaviour(a)
         self.add_behaviour(b)
