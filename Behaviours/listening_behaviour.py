@@ -6,7 +6,7 @@ from spade.message import Message
 
 class Listening_Behaviour(CyclicBehaviour):
     async def run(self):
-        msg = await self.receive(timeout=10)
+        msg = await self.receive(timeout=20)
 
         if msg:
             performative = msg.get_metadata("performative")

@@ -9,9 +9,10 @@ from spade import quit_spade
 XMPP_SERVER = 'desktop-seqnlnu.home'
 PASSWORD = 'NOPASSWORD'
 MAX_VEICULOS = 10
-MAX_PACIENTES = 30
+MAX_PACIENTES = 10
 MAX_HOSPITAIS = 5
-
+Especialidades = ["Cardiologia", "Pneumologia", "Pediatria", "Ortopedia", "Obstetricia", "Traumatologia",
+                          "Neurologia", "Urologia"]
 if __name__ == "__main__":
 
     veiculo_agents_list = []

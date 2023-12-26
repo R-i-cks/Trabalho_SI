@@ -8,7 +8,7 @@ from Classes.position import Position
 
 class Listening_Veiculo_Behaviour(CyclicBehaviour):
     async def run(self):
-        msg = await self.receive(timeout=10)
+        msg = await self.receive(timeout=300)
         if msg:
             if msg.get_metadata("performative") == "request":
                 pedido = jsonpickle.decode(msg.body)
@@ -81,6 +81,9 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
                 msg.body = jsonpickle.encode(self.agent.atributos)
                 msg.set_metadata("performative", "subscribe")
                 await self.send(msg)
-
         else:
-            print(str(self.agent.jid) + ": não recebeu pedido!")
+            print(self.agent.atributos.getAgent() + "is about to kill himself")
+            self.kill()
+
+    async def on_end(self):
+        self.agent.stop()

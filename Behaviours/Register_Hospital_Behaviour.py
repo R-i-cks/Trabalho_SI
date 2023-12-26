@@ -12,14 +12,14 @@ class RegisterHospital_Behav (OneShotBehaviour):
     async def run(self):
         Especialidades = ["Cardiologia", "Pneumologia", "Pediatria", "Ortopedia", "Obstetricia", "Traumatologia",
                           "Neurologia", "Urologia"]
-
+        esp_do_hosp =  random.sample(Especialidades,random.randint(1,len(Especialidades)))
         self.agent.atributos = Reg_Hospital(str(self.agent.jid),
                                           Position(random.randint(1, 1000), random.randint(1, 1000)),
-                                             True,random.sample(Especialidades,8),False)
-
-        """random.choice([True,False])"""
-        """ random.randint(1,len(Especialidades))"""
-
+                                             random.choice([True,False]),
+                                                        esp_do_hosp,False)
+        self.agent.esp_init = esp_do_hosp
+        if "hospital1@" in self.agent.atributos.getAgent():
+            self.agent.atributos.setEspecialidade(Especialidades)
         print("Agent {}:".format(str(self.agent.jid)) + " Hospital initialized with {}".format(self.agent.atributos.toString()))
 
         msg = Message(to=self.agent.get("ugve_contact"))

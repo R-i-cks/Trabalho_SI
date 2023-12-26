@@ -5,7 +5,7 @@ from spade.message import Message
 
 class Listening_Hospital_Behaviour(CyclicBehaviour):
     async def run(self):
-        msg = await self.receive(timeout=10)
+        msg = await self.receive(timeout=300)
 
         if msg:
             if msg.get_metadata("performative") == "request":
@@ -29,4 +29,8 @@ class Listening_Hospital_Behaviour(CyclicBehaviour):
                 else:
                     self.agent.atributos.setOcupado(jsonpickle.decode(msg.body).getOcupado())
         else:
-            print(str(self.agent.jid) + ": não recebeu pedido!")
+            print(self.agent.atributos.getAgent() + "is about to kill himself")
+            self.kill()
+
+    async def on_end(self):
+        self.agent.stop()
