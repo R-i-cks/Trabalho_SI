@@ -86,4 +86,4 @@ class Listening_Veiculo_Behaviour(CyclicBehaviour):
             self.kill()
 
     async def on_end(self):
-        self.agent.stop()
+        await self.agent.stop()

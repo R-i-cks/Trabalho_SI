@@ -29,6 +29,8 @@ class Reg_Veiculo:
     def getTipo(self):
         return self.tipo
 
+    def setTipo(self,tipo):
+        self.tipo = tipo
     def toString(self):
         return "Reg_Veiculo [agent_jid=" + self.agent_jid + ", position=" + self.position.toString() + ", available=" + str(
             self.available) +", tipo="+ self.tipo + "]"

@@ -6,7 +6,7 @@ from spade.message import Message
 
 class Listening_Behaviour(CyclicBehaviour):
     async def run(self):
-        msg = await self.receive(timeout=20)
+        msg = await self.receive(timeout=10)
 
         if msg:
             performative = msg.get_metadata("performative")
@@ -80,7 +80,7 @@ class Listening_Behaviour(CyclicBehaviour):
 
             elif performative == "refuse":
                 msg_info = jsonpickle.decode(msg.body)
-                dist_min = 1000
+                dist_min = 100000
                 if self.agent.processos[msg_info.getAgent()][1].getTipo != 'Helicoptero':
 
                     for ind, hospital in enumerate(self.agent.hospitais):
@@ -101,22 +101,73 @@ class Listening_Behaviour(CyclicBehaviour):
                     await self.send(hospital_msg)
 
                 else:
+                    for i in range(len(self.agent.hospitais)):
+                        if self.agent.hospitais[i].getAgent() == str(msg.sender):
+                            self.agent.hospitais[i].setOcupado(False)
+
+                    encontrado = False
                     for ind, hospital in enumerate(self.agent.hospitais):
 
                         if msg_info.getEspecialidade() in hospital.getEspecialidade() and hospital.isAvailable() and not hospital.getOcupado():
-                            distance = (
-                                    abs(hospital.getPosition().getX() - msg_info.getPosition().getX()) +
-                                    abs(hospital.getPosition().getY() - msg_info.getPosition().getY())
+                            distance = math.sqrt(
+                                math.pow(hospital.getPosition().getX() - msg_info.getPosition().getX(), 2) +
+                                math.pow(hospital.getPosition().getY() - msg_info.getPosition().getY(), 2)
                             )
+                            encontrado = True
 
                             if (dist_min > distance):
+                                ind_hospital = ind
                                 dist_min = distance
                                 self.agent.processos[msg_info.getAgent()][0] = hospital
+                    if not encontrado:
+                        transport_request = msg_info
+                        dic_terrestre ={}
+                        for ind, hospital in enumerate(self.agent.hospitais):
+                            # procurar hospital mais próximo para receber transporte terrestre
+                            if transport_request.getEspecialidade() in hospital.getEspecialidade():
+                                distance = (
+                                        abs(hospital.getPosition().getX() - transport_request.getPosition().getX()) +
+                                        abs(hospital.getPosition().getY() - transport_request.getPosition().getY())
+                                )
 
-                    hospital_msg = Message(to=self.agent.processos[msg_info.getAgent()][0].getAgent())
-                    hospital_msg.set_metadata("performative", "request")
-                    hospital_msg.body = jsonpickle.encode(msg_info)
-                    await self.send(hospital_msg)
+                                if (dist_min > distance):
+                                    dic_terrestre["hospital"] = hospital
+                                    dic_terrestre['total'] = distance
+                                    dist_min = distance
+                        dist_min = 1000000
+                        if 'hospital' in list(dic_terrestre.keys()):
+                            for ind, veiculos in enumerate(self.agent.veiculos):
+                                if veiculos.getTipo() != 'Helicoptero' and veiculos.isAvailable():
+                                    pos_vei = veiculos.getPosition()
+                                    pos_trans = transport_request.getPosition()
+                                    distance = (
+                                            abs(pos_vei.getX() - pos_trans.getX()) +
+                                            abs(pos_vei.getY() - pos_trans.getY())
+                                    )
+
+                                    if (dist_min > distance):
+                                        dic_terrestre['veiculo'] = veiculos
+                                        dic_terrestre['vei_index'] = ind
+                                        dist_min = distance
+
+                            dic_terrestre['total'] = dic_terrestre['total'] + dist_min
+                        else:
+                            dic_terrestre["total"] = 1000000000
+
+                        dist_min = 1000000000
+                        self.agent.processos[str(transport_request.getAgent())] = [dic_terrestre['hospital'], dic_terrestre['veiculo']]
+                        msg = Message(to=dic_terrestre['veiculo'].getAgent())
+                        msg.body = jsonpickle.encode(transport_request)
+                        msg.set_metadata("performative", "request")
+                        await self.send(msg)
+
+                        self.agent.veiculos[dic_terrestre['vei_index']].setAvailable(False)
+                    else:
+                        self.agent.hospitais[ind_hospital].setOcupado(True)
+                        hospital_msg = Message(to=self.agent.processos[msg_info.getAgent()][0].getAgent())
+                        hospital_msg.set_metadata("performative", "request")
+                        hospital_msg.body = jsonpickle.encode(msg_info)
+                        await self.send(hospital_msg)
 
             elif performative == "request":
                 print("Agent {}:".format(str(self.agent.jid)) + " Paciente Agent {} requested HEEEEEELLLLLLP!".format(
@@ -173,6 +224,7 @@ class Listening_Behaviour(CyclicBehaviour):
                             if (dist_min > distance):
                                 dic_heli['hospital'] = hospital
                                 dic_heli['total'] = distance
+                                dic_heli['hospital_index'] = ind
                                 dist_min = distance
 
 
@@ -225,7 +277,7 @@ class Listening_Behaviour(CyclicBehaviour):
                     await self.send(msg)
 
                     self.agent.veiculos[dic_heli['vei_index']].setAvailable(False)
-
+                    self.agent.veiculos[dic_heli['hospital_index']].setAvailable(False)
                 else:
                     print("Agent {}:".format(str(self.agent.jid)) + " O paciente não pode ser atendido por nenhum hospital!")
                     msg = msg.make_reply()

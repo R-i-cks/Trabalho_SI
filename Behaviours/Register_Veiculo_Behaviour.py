@@ -7,18 +7,28 @@ from Classes.reg_veiculo import Reg_Veiculo
 from Classes.position import Position
 import jsonpickle
 
-class RegisterVeiculo_Behav (OneShotBehaviour):
+class RegisterVeiculo_Behav(OneShotBehaviour):
 
     async def run(self):
-        aleatorio = random.randint(1,10)
-        if aleatorio == 10:
-            escolha = "Helicoptero"
-        elif aleatorio > 6:
-            escolha = "Ambulancia_INEM"
-        else:
-            escolha = "Ambulancia"
+
         self.agent.atributos = Reg_Veiculo(str(self.agent.jid),
-                                          Position(random.randint(1, 1000), random.randint(1, 1000)),True,escolha)
+                                           Position(random.randint(1, 1000), random.randint(1, 1000)), True, 'None')
+        if 'veiculo1@' in self.agent.atributos.getAgent():
+            escolha = 'Helicoptero'
+        elif 'veiculo2@' in self.agent.atributos.getAgent():
+            escolha = 'Ambulancia_INEM'
+        elif 'veiculo3@' in self.agent.atributos.getAgent():
+            escolha = 'Ambulancia'
+        else:
+            aleatorio = random.randint(1,10)
+            if aleatorio == 10:
+                escolha = "Helicoptero"
+            elif aleatorio > 6:
+                escolha = "Ambulancia_INEM"
+            else:
+                escolha = "Ambulancia"
+
+        self.agent.atributos.setTipo(escolha)
 
         print("Agent {}:".format(str(self.agent.jid)) + " Veiculo initialized with {}".format(self.agent.atributos.toString()))
 
