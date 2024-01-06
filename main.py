@@ -68,9 +68,9 @@ if __name__ == "__main__":
 
         res_paciente.result()
         paciente_agents_list.append(paciente_agent)
-    time.sleep(3)
+    time.sleep(10)
 
-    while manager_agent.is_alive():
+    while manager_agent.is_alive() and len(paciente_agents_list) < MAX_PACIENTES:
         try:
             time.sleep(1)
         except KeyboardInterrupt:
