@@ -7,7 +7,6 @@ from spade.message import Message
 class Listening_Behaviour(CyclicBehaviour):
     async def run(self):
         msg = await self.receive(timeout=10)
-
         if msg:
             performative = msg.get_metadata("performative")
             if performative == "subscribe":
@@ -75,7 +74,6 @@ class Listening_Behaviour(CyclicBehaviour):
                     if veiculos.getAgent() == msg.sender:
                         veiculos.setAvailable(True)
                 print("O paciente chegou ao hospital.")
-
 
 
             elif performative == "refuse":

@@ -23,5 +23,5 @@ class VerificarEspecialidade_Behav (PeriodicBehaviour):
                         msg.body = jsonpickle.encode(self.agent.atributos)
                         msg.set_metadata("performative", "subscribe")
                         await self.send(msg)
-                    print("Greve ! Agent  {}:".format(str(self.agent.jid)))
+                        print("Greve ! Agent  {}:".format(str(self.agent.jid)))
 

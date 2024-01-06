@@ -2,7 +2,6 @@ from spade.behaviour import CyclicBehaviour
 import jsonpickle
 from spade.message import Message
 
-
 class Listening_Hospital_Behaviour(CyclicBehaviour):
     async def run(self):
         msg = await self.receive(timeout=300)
